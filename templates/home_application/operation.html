@@ -1,0 +1,198 @@
+<%inherit file = '/home_application/layout.html'/>
+ <%block name = "content">
+    <div class="king-content-wrap">
+                <div class="king-layout1-content" style="margin-left: 216px;">
+                    <form class="form-horizontal">
+                        <div class="form-group clearfix ">
+                            <label class="col-sm-3 control-label bk-lh30 pt0">选择业务：</label>
+                            <div class="col-sm-9">
+                                <select name="" id="one" class="form-control bk-valign-top">
+                                    <option value="选择项1">请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!--<div class="form-group clearfix ">
+                            <label class="col-sm-3 control-label bk-lh30 pt0">输入脚本参数：</label>
+                            <div class="col-sm-9">
+                                <input type="text" id="1111" class="form-control bk-valign-top">
+                            </div>
+                        </div>-->
+                        <!--<div class="form-group clearfix ">
+                            <label class="col-sm-3 control-label bk-lh30 pt0">选择集群：</label>
+                            <div class="col-sm-9">
+                                <select name="" id="two" class="form-control bk-valign-top">
+                                    <option value="选择项1">请选择</option>
+                                </select>
+                            </div>
+                        </div>-->
+                        <div class="form-group clearfix ">
+                            <label class="col-sm-3 control-label bk-lh30 pt0">选择脚本：</label>
+                            <div class="col-sm-9">
+                                <select name="" id="four" class="form-control bk-valign-top">
+                                    <option value="选择项1">选择项1</option>
+                                </select>
+                            </div>
+                        </div>
+    <table class="table table-header-bg table-hover mb0" id="table_demo2">
+            <thead>
+                <tr>
+                    <th style="width: 25px">
+                       <input type="checkbox" name="checkall" value="">
+                    </th>
+                    <th style="width: 100px">主机名字</th>
+                    <th style="width:25%">主机区域</th>
+                    <th style="width:25%">主机IP</th>
+                </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="6">
+                        <div class="pull-left">
+                            <a class="king-btn king-radius king-danger ml10" id="sure" title="确定">执行脚本</a>
+                        </div>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+                    </form>
+                </div>
+            </div>
+<script>
+        $(function(){
+            $.ajax({
+                url: site_url+'operation/business',
+                type: 'get',
+                dataType: 'json',
+                success : function(data){
+                    console.log('获取');
+                  //  $("#one option").empty();
+                    console.log(data.data);
+                    for(var i = 0; i<data.data.length; i++){
+                        $("#one").append("<option value='" + data.data[i]['id'] + "'>" + data.data[i]['name'] + "</option>")
+                    }
+            }});
+            $.ajax({
+                url:site_url+'script/select_script',
+                type:'get',
+                dataType:'json',
+                success:function (data) {
+                    console.log("获取脚本选择列表");
+                    //$("#four").empty();
+                    for(var i = 0; i < data.data.length; i++){
+                        $("#four").append("<option value='" + data.data[i]['id'] + "'>" + data.data[i]['name'] + "</option>")
+                    }
+                }
+
+            })
+        });
+        /*$('#one').change(function(){
+            console.log("带参数的获取");
+            var info = $("#one").val();
+            var bk_biz_id = info.split(',')[0];
+            url_1 = 'cluster/' + bk_biz_id;
+            console.log(bk_biz_id);
+            $.ajax({
+                url:url_1,
+                dataType: 'json',
+                type: 'get',
+                data: {
+                    bk_biz_id: bk_biz_id,
+                },
+                success:function (data) {
+                    console.log("获取集群");
+                    $('#two').empty();
+                    for(var i = 0; i < data.data.length; i++){
+                        $("#two").append("<option value='" + data.data[i]['set_id'] + "'>" + data.data[i]['set_name'] + "</option>")
+                    }
+                }
+            })
+        });*/
+        $("#one").change(function () {
+            console.log("获取主机");
+            var info1 = $("#one").val();
+            var bk_biz_id = info1.split(',')[0];
+            //var info2 = $("#two").val();
+           // var set_id = info2.split(',')[0];
+            $.ajax({
+                url:site_url+'operation/host',
+                type:'get',
+                dataType:'json',
+                data:{
+                    bk_biz_id:bk_biz_id,
+                    //set_id:set_id
+                },
+                success:function (data) {
+                    console.log("获取主机");
+                    $("#table_demo2 tbody").empty();
+                    for(var i = 0;i < data.data.length; i++){
+                        tr = '';
+                        tr = '<tr><td>'+'<input  name="select" type="checkbox" value="'+ data.data[i]['ip'] +'">'+ '</td><td>'+data.data[i]['os_name']+'</td><td>'+data.data[i]['area']+'</td><td>'+ data.data[i]['ip']+'</td></tr>';
+                        $("#table_demo2 tbody").append(tr)
+                    }
+
+                }
+            })
+
+
+        })
+    </script>
+<script>
+//绑定点击事件
+     $("#sure").click(function () {
+                var one = $("#one").val();
+                var one_1 = $("#one option:selected").text();
+                var bk_biz_id = one.split(',')[0];
+                var input_url = $("#1111").val();
+                //var two = $("#two").val();
+                //var two_1 = $("#two option:selected").text();
+                //var set_id = two.split(',')[0];
+                var arr = [];
+                var script_id = $("#four").val();
+                //console.log(one_1,two_1);
+         //判断表格中选择框是否选中
+                $('#table_demo2 tbody input').each(function () {
+                if($(this).is(':checked')==true){
+                    arr.push($(this).val());
+                }
+                 });
+                 $.ajax({
+                     url:site_url+'operation/run_script/',
+                     type:'get',
+                     dataType:'json',
+                     data:{
+                         "bk_biz_id":bk_biz_id,
+                         "input_url":input_url,
+                         //"set_id":set_id,
+                         "ip_list":arr.toString(),
+                         "script_id":script_id,
+                         "biz_name":one_1,
+                         //"set_name":two_1,
+                     },
+                     success:function () {
+                         alert('正在执行脚本，请到执行记录查看详情')
+                     }
+                 })
+            })
+</script>
+<script>
+    $('#table_demo2').find('input[name="checkall"]').click(function(){
+                var checked = $(this).prop('checked');
+                $('#table_demo2>tbody input').prop('checked', checked);
+            });
+            $('#table_demo2').find(':checkbox').on('click', function(){
+                if(!this.checked){
+                    $('#table_demo2').find('input[name="checkall"]').prop('checked',false);
+                }
+            });
+</script>
+  </%block>
+
+
+
+
+
+
+           

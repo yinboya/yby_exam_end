@@ -1,0 +1,95 @@
+<%inherit file = '/home_application/layout.html'/>
+ <%block name = "content">
+        <div class="king-content-wrap">
+            <div class="king-layout1-content" style="margin-left: 216px;">
+                <div class="container">
+                    <table class="table table-striped" style="margin-top:20px;">
+                        <thead>
+                        <tr>
+                            <th>脚本名称</th>
+                            <th>脚本内容</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        %for one_script in all_script_data:
+                        <tr>
+                            <td style="width: 8%">${ one_script.name }</td>
+                            <td>${ one_script.script_content }</td>
+                            <td style="width: 8%"><a href="${SITE_URL}script/delete_script/${one_script.id}">删除</a></td>
+                        </tr>
+                        %endfor
+                        </tbody>
+                    </table>
+                </div>
+                <form action="${SITE_URL}script/add_script/" method="get">
+                    <div class="container" style="margin-top:40px;border:1px solid #696969">
+                        <h3>增加新的脚本</h3>
+                        <div class="form-group clearfix ">
+                            <label class="col-sm-3 control-label bk-lh30 pt0">脚本名称：</label>
+                            <div class="col-sm-9">
+                                <input type="text" class="form-control" name="script_name" id="script_name">
+                            </div>
+                        </div>
+                        <div class="form-group clearfix ">
+                            <label class="col-sm-3 control-label bk-lh30 pt0">脚本内容：</label>
+                            <div class="col-sm-9">
+                                <textarea name="script_content" id="script_content" cols="98%" rows="12"
+                                          style="OVERFLOW:   hidden"></textarea>
+
+                            </div>
+                        </div>
+                        <div class="form-group clearfix">
+                            <div class="col-sm-9 col-sm-offset-3">
+                                <input type="submit" value="提交"
+                                       class="king-btn mr10  king-success">
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+</%block>
+<script>
+    $(function () {
+        var li = $('.navi li');
+        li.each(function () {
+            $(this).click(function () {
+                if ($(this).hasClass('c-open')) {
+                    $(this).find('ul').slideUp(350);
+                    $(this).removeClass('c-open');
+                } else {
+                    $(this).find('ul').slideDown(350);
+                    $(this).addClass('c-open');
+                }
+            })
+        });
+        $('#select_business1').change(function () {
+            console.log('获取');
+            var calve_data1 = $('#select_business1').val();
+            var calve_data = calve_data1.split(',')[0];
+            console.log('calve_data', calve_data);
+            var url_data = '${SITE_URL}' + 'search_pc/' + calve_data;
+            console.log(calve_data);
+            $.ajax({
+                url: url_data,
+                type: 'get',
+                dataType: 'json',
+                /*data: {
+                 biz_id: calve_data
+                 },*/
+                success: function (data) {
+                    console.log('获取');
+                    $("#data_list").empty();
+                    for (var i = 0; i < data.data.list.length; i++) {
+                        $('.data_list').append('<p><input type="checkbox" name="jiaoben_role" class="check_role" value="' + data.data.list[i].ip + '|' + data.data.list[i].area_id + '"><label for="">' + data.data.list[i].area + '|' + data.data.list[i].ip + '|' + data.data.list[i].os_name + '</label></p>')
+                    }
+
+
+                }
+            });
+        });
+    });
+
+</script>

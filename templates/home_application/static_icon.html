@@ -1,0 +1,65 @@
+<%inherit file = '/home_application/layout.html'/>
+<%block name = "content">
+    <div style="width: 50%;height: 50%;position:relative;left:50%" id="hhhh"></div>
+
+<script type="text/javascript" src="https://echarts.baidu.com/gallery/vendors/echarts/echarts-all-3.js"></script>
+<script type="text/javascript" src="https://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+<script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript">
+        function test_pc_data() {
+    $.ajax({
+        url: '${SITE_URL}records/num/',
+        type: 'get',
+        dataType: 'json',
+        success: function (data) {
+            var myChart = echarts.init(document.getElementById('hhhh'));
+            var obj = data;
+            var time_list = obj.name;
+            var sum_list = obj.value;
+            option = {
+                title: {
+                    text: '每日执行次数'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: []
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: time_list
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: sum_list,
+                    type: 'line'
+                }]
+
+            };
+
+            myChart.setOption(option);
+
+
+        }
+    });
+}
+
+test_pc_data()
+
+    </script>
+</%block>

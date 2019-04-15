@@ -1,0 +1,70 @@
+<%inherit file = '/home_application/layout.html'/>
+<%block name = "content">
+    <div style="width: 50%;height: 50%;margin:0 auto" id="hhhh"></div>
+    <p id="id" hidden="hidden">${ host_id }</p>
+<script type="text/javascript" src="https://echarts.baidu.com/gallery/vendors/echarts/echarts-all-3.js"></script>
+<script type="text/javascript" src="https://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
+<script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript">
+        function test_pc_data() {
+           var host_id = $("#id").text()
+    $.ajax({
+        url: '${SITE_URL}records/dynamic/',
+        type: 'get',
+        dataType: 'json',
+        data:{
+            'host_id':host_id,
+        },
+        success: function (data) {
+            var myChart = echarts.init(document.getElementById('hhhh'));
+            var obj = data;
+            var memory = obj.memory;
+            var disk = obj.disk;
+            var cpu = obj.cpu;
+            option = {
+                title: {
+                    text: '指标百分数(%)'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: []
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['memory','disk','cpu']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [memory,disk,cpu],
+                    type: 'line'
+                }]
+
+            };
+
+            myChart.setOption(option);
+
+
+        }
+    });
+}
+
+test_pc_data()
+setInterval(test_pc_data, 1000);
+    </script>
+</%block>
