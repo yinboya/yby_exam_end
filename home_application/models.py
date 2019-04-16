@@ -25,6 +25,7 @@ class Records(models.Model):
     status = models.IntegerField(verbose_name=u'是否开启周期', null=True)
     # 默认为0 不开启   1 为开启
     script_name = models.CharField(verbose_name=u'脚本ID', max_length=200, null=True)
+    user = models.CharField(verbose_name=u'操作人', max_length=200)
 
     class Meta:
         verbose_name = u'脚本记录表'

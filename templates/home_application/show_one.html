@@ -9,7 +9,10 @@
                 <datalist id="selectlist">
 
                 </datalist>
-                <input id="select_time" type="date">
+                时间：<input id="select_time" type="date">
+                操作人：<input id="user" type="text" list="userlist">
+                    <datalist id="userlist">
+                        </datalist>
                 <button onclick="f()">搜索</button>
             </div>
 
@@ -23,7 +26,7 @@
                     <thead>
                     <tr>
                         <th>业务名称</th>
-                        <!--<th>集群名称</th>-->
+                        <th>操作人</th>
                         <th>脚本名称</th>
                         <th>时间</th>
                         <th>ip</th>
@@ -58,6 +61,18 @@
                         $("#selectlist").append("<option >" + data.data[i]['name'] + "</option>")
                     }
             }});
+         $.ajax({
+                url: site_url+ 'records/get_user',
+                type: 'get',
+                dataType: 'json',
+                success : function(data){
+                    console.log('获取');
+                    $("#userlist").empty();
+                    console.log(data.data);
+                    for(var i = 0; i<data.data.length; i++){
+                        $("#userlist").append("<option >" + data.data[i] + "</option>")
+                    }
+            }});
         $.ajax({
             url: site_url+ 'records/records',
             type: 'get',
@@ -69,9 +84,9 @@
                     console.log('2222')
                     tr = '';
                     if(data.data[i]['status'] == 0){
-                        tr = '<tr><td>' + data.data[i]['biz_name'] + '</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:red" onclick="btn1('+ data.data[i]['id'] +')">开启</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
+                        tr = '<tr><td>' + data.data[i]['biz_name']+'</td><td>' +data.data[i]['user'] + '</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:red" onclick="btn1('+ data.data[i]['id'] +')">开启</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
                     }else{
-                        tr = '<tr><td>' + data.data[i]['biz_name'] + '</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:blue" onclick="btn2('+ data.data[i]['id'] +')">关闭</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
+                        tr = '<tr><td>' + data.data[i]['biz_name'] + '</td><td>' +data.data[i]['user'] +'</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:blue" onclick="btn2('+ data.data[i]['id'] +')">关闭</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
                     }
 
                     $("#table2_demo4 tbody").append(tr)
@@ -84,6 +99,7 @@
     function f() {
         var bk_biz_name = $("#select_business").val();
         var time = $("#select_time").val();
+        var handle_user = $("#user").val();
         $.ajax({
             url:site_url+ 'records/search_records',
             type:'get',
@@ -91,15 +107,16 @@
             data:{
                 bk_biz_name:bk_biz_name,
                 time:time,
+                handle_user:handle_user,
             },
             success: function (data) {
                 $("#table2_demo4 tbody").empty();
                 for (var i = 0; i < data.data.length; i++) {
                     tr = '';
                     if(data.data[i]['status'] == 0){
-                        tr = '<tr><td>' + data.data[i]['biz_name'] + '</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:red" onclick="btn1('+ data.data[i]['id'] +')">开启</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
+                        tr = '<tr><td>' + data.data[i]['biz_name'] + '</td><td>' +data.data[i]['user'] +'</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:red" onclick="btn1('+ data.data[i]['id'] +')">开启</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
                     }else{
-                        tr = '<tr><td>' + data.data[i]['biz_name'] + '</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:blue" onclick="btn2('+ data.data[i]['id'] +')">关闭</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
+                        tr = '<tr><td>' + data.data[i]['biz_name'] +'</td><td>' +data.data[i]['user'] + '</td><td>' + data.data[i]['script_name'] + '</td><td>' + data.data[i]['start_time'] + '</td><td>' + data.data[i]['ip'] + '</td><td>'+ '<button style="color:blue" onclick="btn2('+ data.data[i]['id'] +')">关闭</button>' +'</td><td>'+'<a href="${SITE_URL}records/de/?re='+data.data[i]['id']+'">查看详情</a>' +'</td></tr>';
                     }
 
                     $("#table2_demo4 tbody").append(tr)

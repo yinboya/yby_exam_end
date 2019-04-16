@@ -19,4 +19,5 @@ urlpatterns = patterns(
     (r'^end/$', 'end'),  # 关闭周期接口
     (r'^details/$', 'details'),  # 获取执行详情
     (r'^de/$', 'de'),  # 主机详情
+    (r'^get_user/$', 'get_user'),  # 主机详情
 )

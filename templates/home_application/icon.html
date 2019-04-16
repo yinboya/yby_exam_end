@@ -1,35 +1,40 @@
 <%inherit file = '/home_application/layout.html'/>
 <%block name = "content">
     <div style="width: 50%;height: 50%;margin:0 auto" id="hhhh"></div>
-    <p id="id" hidden="hidden">${ host_id }</p>
+    <p id="ip" hidden="hidden">${ host_id }</p>
+<p id="id" hidden="hidden">${ ip }</p>
 <script type="text/javascript" src="https://echarts.baidu.com/gallery/vendors/echarts/echarts-all-3.js"></script>
 <script type="text/javascript" src="https://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
 <script src="https://libs.baidu.com/jquery/2.1.4/jquery.min.js"></script>
     <script type="text/javascript">
         function test_pc_data() {
            var host_id = $("#id").text()
+           var ip = $("#ip").text()
+            console.log(host_id,ip)
     $.ajax({
         url: '${SITE_URL}records/dynamic/',
         type: 'get',
         dataType: 'json',
         data:{
             'host_id':host_id,
+            'ip':ip,
         },
         success: function (data) {
             var myChart = echarts.init(document.getElementById('hhhh'));
             var obj = data;
-            var memory = obj.memory;
-            var disk = obj.disk;
-            var cpu = obj.cpu;
+            var time = obj.time;
+            var memory = obj.value.memory;
+            var disk = obj.value.disk;
+            var cpu = obj.value.cpu;
             option = {
                 title: {
-                    text: '指标百分数(%)'
+                    text: '指标百分数(%)',
                 },
                 tooltip: {
                     trigger: 'axis'
                 },
                 legend: {
-                    data: []
+                    data: ['memory','disk','cpu']
                 },
                 grid: {
                     left: '3%',
@@ -45,14 +50,28 @@
                 xAxis: {
                     type: 'category',
                     boundaryGap: false,
-                    data: ['memory','disk','cpu']
+                    data: time
                 },
                 yAxis: {
                     type: 'value'
                 },
-                series: [{
-                    data: [memory,disk,cpu],
-                    type: 'line'
+                series: [ {
+                    name:'memory',
+                    type:'line',
+                    stack: '内存',
+                    data:memory
+                },
+                {
+                    name:'disk',
+                    type:'line',
+                    stack: '硬盘',
+                    data:disk
+                },
+                {
+                    name:'cpu',
+                    type:'line',
+                    stack: 'cpu',
+                    data:cpu
                 }]
 
             };

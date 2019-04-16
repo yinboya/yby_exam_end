@@ -5,6 +5,8 @@
 # _IDE_ = PyCharm
 import datetime
 
+from django.db.models import Q
+
 from common.mymako import render_mako_context, render_json
 from home_application import models
 
@@ -30,7 +32,7 @@ def records(request):
     data = models.Records.objects.all()
     for i in data:
         dic = {'id': i.id, 'status': i.status, 'biz_name': i.biz_name, 'script_name': i.script_name,
-               'start_time': i.start_time, 'ip': i.ip}
+               'start_time': i.start_time, 'ip': i.ip, 'user':i.user}
         data_list.append(dic)
     response["status"] = 0
     response["message"] = u'脚本执行成功'
@@ -51,23 +53,25 @@ def search_records(request):
     :return:
     """
     response = {}
-    bk_biz_name = request.GET.get('bk_biz_name')
+    bk_biz_name = request.GET.get('bk_biz_name', '')
     # bk_biz_name = '蓝鲸exam'
-    time_1 = request.GET.get('time')
+    time_1 = request.GET.get('time', '')
+    handle_user = request.GET.get('handle_user', '')
     # time_1 = '2019-04-08'
-    obj = models.Records.objects.filter(biz_name=bk_biz_name,)
+    q = Q()  # Q查询中的模糊查询
+    if bk_biz_name:
+        q.add(Q(biz_name=bk_biz_name), q.AND)
+    if time_1:
+        q.add(Q(start_time=time_1), q.AND)
+    if handle_user:
+        q.add(Q(user=handle_user), q.AND)
+    obj = models.Records.objects.filter(q)
     data_list = []
     if obj:
         for i in obj:
-            if time_1:
-                if str(i.start_time[0:10]) == time_1:
-                    dic = {'id': i.id, 'status': i.status, 'biz_name': i.biz_name, 'script_name': i.script_name,
-                           'start_time': i.start_time, 'ip': i.ip}
-                    data_list.append(dic)
-            else:
-                dic = {'id': i.id, 'status': i.status, 'biz_name': i.biz_name, 'script_name': i.script_name,
-                       'start_time': i.start_time, 'ip': i.ip}
-                data_list.append(dic)
+            dic = {'id': i.id, 'status': i.status, 'biz_name': i.biz_name, 'script_name': i.script_name,
+                   'start_time': i.start_time, 'ip': i.ip}
+            data_list.append(dic)
     response['data'] = data_list
     return render_json(response)
 
@@ -175,19 +179,57 @@ def dynamic(request):
     :param request:
     :return:
     """
-    reaponse = {}
-    host_id = request.GET.get('host_id')
+    response = {}
+    re_id = request.GET.get('host_id')
+    ip = request.GET.get('ip')
     # host_id = 1
-    Host_result = models.Host.objects.get(id=host_id)
-    log_content = Host_result.log_content
-    data_list = log_content.split('|')
-    # memory = data_list[0]
-    # disk = data_list[1]
-    # cpu = data_list[2]
-    reaponse['memory'] = data_list[0][0:-1]
-    reaponse['disk'] = data_list[1][0:-1]
-    reaponse['cpu'] = data_list[2][0:-2]
-    return render_json(reaponse)
+    use_data = []
+    Host_result = models.Host.objects.filter(task_id=ip).order_by('-id')
+    for l in Host_result:
+        if l.ip == re_id:
+            use_data.append(l)
+    # records = models.Records.objects.get(id=re_id)
+    # data_all = []
+    # if len(records.ip) > 14:
+    #     ip_list = records.ip.split(',')
+    #     for ip in ip_list:
+    #         Host_result = models.Host.objects.filter(task_id=re_id, ip=ip).order_by('-id')
+    #         data_all.append(Host_result)
+    # else:
+    #     ip = records.ip
+    # ip_list =
+    list_1 = []  # memory
+    list_2 = []  # disk
+    list_3 = []  # cpu
+    data ={}
+    time_list = []  # 对应的时间列表
+    if len(use_data) > 10:
+        for i in reversed(use_data[0:10]):
+            log_content = i.log_content
+            data_list = log_content.split('|')
+            time_list.append(i.start_time[10:20])
+            print i.start_time
+            list_1.append(data_list[0][0:-1])
+            list_2.append(data_list[1][0:-1])
+            list_3.append(data_list[2][0:-2])
+        data['memory'] = list_1
+        data['disk'] = list_2
+        data['cpu'] = list_3
+    else:
+        for i in reversed(use_data):
+            log_content = i.log_content
+            data_list = log_content.split('|')
+            time_list.append(i.start_time[10:20])
+            list_1.append(data_list[0][0:-1])
+            list_2.append(data_list[1][0:-1])
+            list_3.append(data_list[2][0:-2])
+        data['memory'] = list_1
+        data['disk'] = list_2
+        data['cpu'] = list_3
+    response['time'] = time_list
+    response['value'] = data
+
+    return render_json(response)
 
 
 def dynamic_html(request):
@@ -197,7 +239,9 @@ def dynamic_html(request):
     :return:
     """
     host_id = request.GET.get('host_id')
-    return render_mako_context(request, '/home_application/icon.html', {'host_id': host_id})
+    ip = request.GET.get('ip')
+    print host_id, ip
+    return render_mako_context(request, '/home_application/icon.html', {'host_id': host_id, 'ip':ip})
 
 
 def de(request):
@@ -208,9 +252,26 @@ def de(request):
     """
     records_id = request.GET.get('re')
     # print records_id
-    result = models.Host.objects.filter(task=records_id)
+    records = models.Records.objects.get(id=records_id)
+    ip_list = records.ip.split(',')
+    result = models.Host.objects.filter(task=records_id).order_by('id')
     data_list = []
-    for i in result:
-        dic = {'ip': i.ip, 'id': i.id, 'start_time': i.start_time, 'log_content': i.log_content}
+    for i in result[0:len(ip_list)]:
+        dic = {'ip': i.ip, 'id': i.id, 'start_time': i.start_time, 'log_content': i.log_content, 'task_id': i.task_id}
         data_list.append(dic)
     return render_mako_context(request, '/home_application/show_two.html', {'data_list': data_list})
+
+
+def get_user(request):
+    """
+    获取记录表的所有操作用户
+    :param request:
+    :return:
+    """
+    response = {}
+    result = models.Records.objects.all()
+    user_list = []
+    for i in result:
+        user_list.append(i.user)
+    response['data'] = list(set(user_list))
+    return render_json(response)

@@ -4,6 +4,8 @@
 # _Time_ = 15:36
 # _IDE_ = PyCharm
 import base64
+import datetime
+
 from common.mymako import render_json
 from home_application.utils import ESB
 from home_application import models
@@ -144,6 +146,7 @@ def run_script(request):
         biz_name = request.GET.get('biz_name')
         # set_name = request.GET.get('set_name')
         # input_url = request.GET.get('input_url')
+        user = request.user.username
         script_contents = models.Script.objects.get(id=script_id)
         script_data = base64.b64encode(script_contents.script_content.encode('utf-8'))
         ip_list = []
@@ -168,6 +171,8 @@ def run_script(request):
             bk_biz_id=bk_biz_id,
             # set_id=set_id,
             ip=ip,
+            user=user,
+            # start_time=datetime.datetime.now().strftime('%Y-%m-%d'),
             # set_name=set_name,
             # set_name=input_url,
             biz_name=biz_name,

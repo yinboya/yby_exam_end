@@ -41,7 +41,7 @@ def execute_task():
     async_task.apply_async(args=[now.hour, now.minute], eta=now + datetime.timedelta(seconds=60))
 
 
-@periodic_task(run_every=5)
+@periodic_task(run_every=1)
 def get_time():
     """
     celery 周期任务示例
@@ -99,7 +99,7 @@ def get_script_log_data(records_id, bk_biz_id, job_instance_id):
     try:
         records = models.Records.objects.filter(id=records_id)
         records = records[0]
-        task = models.Host.objects.filter(task=records_id)
+        # task = models.Host.objects.filter(task=records_id)
         datas = ESB.ESBComponentApi().get_job_instance_log(bk_biz_id=bk_biz_id, job_instance_id=job_instance_id)
         if datas["data"][0]["status"] == 3:
             result = datas['data'][0]["step_results"]
@@ -107,24 +107,14 @@ def get_script_log_data(records_id, bk_biz_id, job_instance_id):
                 ip = i["ip"]
                 log_content = i["log_content"]
                 start_time = i["start_time"]
-                if task:
-                    for host in task:
-                        if host.ip == ip:
-                            models.Host.objects.filter(id=host.id).update(
-                                task=records,
-                                ip=ip,
-                                log_content=log_content,
-                                start_time=start_time
-                            )
-                else:
-                   models.Host.objects.create(
-                       task=records,
-                       ip=ip,
-                       log_content=log_content,
-                       start_time=start_time
-                   )
+                models.Host.objects.create(
+                   task=records,
+                   ip=ip,
+                   log_content=log_content,
+                   start_time=start_time
+               )
             # records.log_content = log_content
-            records.start_time = datas['data'][0]["step_results"][0]["ip_logs"][0]["start_time"]
+            records.start_time = datas['data'][0]["step_results"][0]["ip_logs"][0]["start_time"][0:10]
             records.result = 3
             records.save()
         elif datas["data"][0]["status"] == 2:
